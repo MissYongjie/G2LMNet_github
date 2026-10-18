@@ -67,7 +67,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-**Data.** Download `HetData_G2LMNet.zip` from the Releases page and unzip it to `data/hetdata/`
+**Data.** Download [`HetData_G2LMNet.zip`](https://github.com/MissYongjie/G2LMNet_github/releases/download/v1.0/HetData_G2LMNet.zip) from the [Releases](https://github.com/MissYongjie/G2LMNet_github/releases) page and unzip it inside `data/`, which gives `data/hetdata/*.mat`
 (see [`data/README.md`](data/README.md)).
 
 **Train** (one dataset, or all six):
