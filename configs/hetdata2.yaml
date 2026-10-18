@@ -1,0 +1,59 @@
+# HetData #2 | Texas | Landsat-5 (t1) / EO-1 ALI (t2) | forest fire | 1534 x 808 pixels
+# Paper setting (fixed final epoch, no GT-based selection).
+
+dataset:
+  file: hetdata2_texas.mat
+  t1_norm: zscore           # minmax | zscore | log_zscore
+  t2_norm: log_zscore
+
+seed: 0
+deterministic: false
+epochs: 300                 # total = graph pre-training + pixel training
+
+superpixel:
+  method: slico             # SLICO on the normdiff guidance image
+  n_segments: 1000
+  compactness: 45.0
+  iterations: 10
+
+graph:                      # Stage 1: KAN graph branch
+  pretrain_epochs: 10
+  hidden_dim: 3
+  latent_dim: 2
+  lr: 0.01
+  weight_decay: 0.005
+  lambda_reg: 1.0e-4
+  smooth_alpha: 0.35
+  smooth_iters: 2
+
+pixel:                      # Stage 2: LightMamba pixel branch
+  embed_dim: 32
+  alm_kernel: 7
+  alm_blocks: 2
+  alm_expansion: 4
+  alm_dropout: 0.0
+  aspp_rates: [1, 2, 4, 8]
+  lr: 0.01
+  weight_decay: 0.001
+  lr_milestones: []
+  lr_gamma: 1.0
+
+guidance:                   # scheduled graph guidance
+  start_epoch: 10           # E_start
+  end_epoch: 180            # E_end
+  ramp_epochs: 60           # E_ramp
+  strength: 1.0             # alpha_g
+  tail_strength: 0.0        # alpha_tail
+  pseudo_weight: 1.0        # w_p within the window
+  pseudo_tail_weight: 0.0   # w_p after E_end
+  pseudo_threshold: 0.7     # theta_ps
+  pseudo_blur_kernel: 33
+  pseudo_blur_sigma: 3.0
+
+loss:
+  lambda_fuse: 4.0
+  lambda_tv: 1.0
+  lambda_align: 0.55
+  edge_k: 5.0
+  prior_beta: 0.3
+  aux_weight: 0.2

@@ -1,0 +1,59 @@
+# HetData #5 | Toulouse | Pleiades (t1) / WorldView-2 (t2) | construction | 500 x 500 pixels
+# Paper setting (fixed final epoch, no GT-based selection).
+
+dataset:
+  file: hetdata5_toulouse.mat
+  t1_norm: zscore           # minmax | zscore | log_zscore
+  t2_norm: log_zscore
+
+seed: 1
+deterministic: false
+epochs: 30                  # total = graph pre-training + pixel training
+
+superpixel:
+  method: slico             # SLICO on the normdiff guidance image
+  n_segments: 1500
+  compactness: 10.0
+  iterations: 10
+
+graph:                      # Stage 1: KAN graph branch
+  pretrain_epochs: 20
+  hidden_dim: 3
+  latent_dim: 2
+  lr: 0.001
+  weight_decay: 0.005
+  lambda_reg: 1.0e-4
+  smooth_alpha: 0.25
+  smooth_iters: 1
+
+pixel:                      # Stage 2: LightMamba pixel branch
+  embed_dim: 32
+  alm_kernel: 9
+  alm_blocks: 2
+  alm_expansion: 4
+  alm_dropout: 0.0
+  aspp_rates: [1, 2, 4, 8]
+  lr: 0.005
+  weight_decay: 5.0e-4
+  lr_milestones: []
+  lr_gamma: 1.0
+
+guidance:                   # scheduled graph guidance
+  start_epoch: 20           # E_start
+  end_epoch: 25             # E_end
+  ramp_epochs: 10           # E_ramp
+  strength: 0.7             # alpha_g
+  tail_strength: 0.0        # alpha_tail
+  pseudo_weight: 1.0        # w_p within the window
+  pseudo_tail_weight: 0.0   # w_p after E_end
+  pseudo_threshold: 0.6     # theta_ps
+  pseudo_blur_kernel: 25
+  pseudo_blur_sigma: 2.5
+
+loss:
+  lambda_fuse: 3.5
+  lambda_tv: 0.7
+  lambda_align: 0.45
+  edge_k: 5.0
+  prior_beta: 0.35
+  aux_weight: 0.2

@@ -1,0 +1,59 @@
+# HetData #3 | Gloucester-II | QuickBird-2 (t1) / TerraSAR-X (t2) | flooding | 1034 x 582 pixels
+# Paper setting (fixed final epoch, no GT-based selection).
+
+dataset:
+  file: hetdata3_gloucester2.mat
+  t1_norm: zscore           # minmax | zscore | log_zscore
+  t2_norm: log_zscore
+
+seed: 0
+deterministic: true
+epochs: 64                  # total = graph pre-training + pixel training
+
+superpixel:
+  method: soft_slic         # soft-SLIC on the t2 image
+  n_segments: 400
+  compactness: 0.2
+  iterations: 10
+
+graph:                      # Stage 1: KAN graph branch
+  pretrain_epochs: 8
+  hidden_dim: 3
+  latent_dim: 2
+  lr: 0.001
+  weight_decay: 5.0e-4
+  lambda_reg: 1.0e-4
+  smooth_alpha: 0.35
+  smooth_iters: 2
+
+pixel:                      # Stage 2: LightMamba pixel branch
+  embed_dim: 32
+  alm_kernel: 7
+  alm_blocks: 2
+  alm_expansion: 5
+  alm_dropout: 0.05
+  aspp_rates: [1, 2, 4, 8]
+  lr: 0.001215
+  weight_decay: 1.0e-4
+  lr_milestones: []
+  lr_gamma: 1.0
+
+guidance:                   # scheduled graph guidance
+  start_epoch: 8            # E_start
+  end_epoch: 33             # E_end
+  ramp_epochs: 26           # E_ramp
+  strength: 0.55            # alpha_g
+  tail_strength: 0.01       # alpha_tail
+  pseudo_weight: 1.0        # w_p within the window
+  pseudo_tail_weight: 0.035 # w_p after E_end
+  pseudo_threshold: 0.7     # theta_ps
+  pseudo_blur_kernel: 33
+  pseudo_blur_sigma: 3.0
+
+loss:
+  lambda_fuse: 2.0
+  lambda_tv: 1.0
+  lambda_align: 0.2
+  edge_k: 3.0
+  prior_beta: 0.3
+  aux_weight: 0.1
